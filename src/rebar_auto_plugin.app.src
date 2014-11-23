@@ -1,0 +1,9 @@
+{application, rebar_auto_plugin,
+ [{description, "A rebar plugin"}
+ ,{vsn, "0.1.0"}
+ ,{registered, []}
+ ,{applications,
+    [kernel,stdlib]}
+ ,{env,[]}
+ ,{modules, []}
+ ]}.
