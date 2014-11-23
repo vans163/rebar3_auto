@@ -14,7 +14,7 @@ Use
 Add the plugin to your rebar config:
 
     {plugins, [
-        {rebar_auto_plugin, ".*", {git, "git@github:tsloughter/rebar_auto_plugin.git", {branch, "master"}}}
+        {rebar_auto_plugin, ".*", {git, "https://github.com/tsloughter/rebar_auto_plugin.git", {branch, "master"}}}
     ]}.
 
 Then just call your plugin directly in an existing application:
