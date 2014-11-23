@@ -18,7 +18,7 @@ init(State) ->
             {deps, ?DEPS},              % The list of dependencies
             {example, "rebar auto"}, % How to use the plugin
             {opts, []},                  % list of options understood by the plugin
-            {short_desc, "A rebar plugin"},
+            {short_desc, "Automatically run compile task on change of source file."},
             {desc, ""}
     ]),
     {ok, rebar_state:add_provider(State, Provider)}.
@@ -33,6 +33,12 @@ format_error(Reason) ->
     io_lib:format("~p", [Reason]).
 
 auto(State) ->
+    Task = case rebar_state:command_args(State) of
+               [T | _] ->
+                   list_to_atom(T);
+               _ ->
+                   compile
+           end,
     rebar_file_monitor:start(),
     Apps = rebar_state:project_apps(State),
 
@@ -41,7 +47,7 @@ auto(State) ->
                              {ok, _, Ref} = rebar_file_monitor:monitor_dir(Dir, self()),
                              Ref
                      end, Apps),
-    Task = compile,
+
     State1 = rebar_state:set(State, task, Task),
     State2 = rebar_state:command_args(State1, []),
     case rebar_core:process_command(State2, Task) of
