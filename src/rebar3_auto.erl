@@ -44,10 +44,10 @@ init(State) ->
 do(State) ->
     spawn_link(fun() ->
                        listen_on_project_apps(State),
-                       State1 = remove_from_plugin_paths(State),
-                       auto(State1)
+                       auto(State)
                end),
-    rebar_prv_shell:do(State).
+    State1 = remove_from_plugin_paths(State),
+    rebar_prv_shell:do(State1).
 
 -spec format_error(any()) ->  iolist().
 format_error(Reason) ->
