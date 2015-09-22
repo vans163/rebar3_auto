@@ -16,7 +16,9 @@
 -module(rebar3_auto).
 -behaviour(provider).
 
--export([init/1, do/1, format_error/1]).
+-export([init/1
+        ,do/1
+        ,format_error/1]).
 
 -define(PROVIDER, auto).
 -define(DEPS, [app_discovery]).
@@ -33,48 +35,32 @@ init(State) ->
             {deps, ?DEPS},            % The list of dependencies
             {example, "rebar3 auto"}, % How to use the plugin
             {opts, []},               % list of options understood by the plugin
-            {short_desc, "Automatically run compile task on change of source file."},
+            {short_desc, "Automatically run compile task on change of source file and reload modules."},
             {desc, ""}
     ]),
     {ok, rebar_state:add_provider(State, Provider)}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
-    auto(State).
+    spawn_link(fun() ->
+                       listen_on_project_apps(State),
+                       State1 = remove_from_plugin_paths(State),
+                       auto(State1)
+               end),
+    rebar_prv_shell:do(State).
 
 -spec format_error(any()) ->  iolist().
 format_error(Reason) ->
     io_lib:format("~p", [Reason]).
 
 auto(State) ->
-    Task = case rebar_state:command_args(State) of
-               [T | _] ->
-                   list_to_atom(T);
-               _ ->
-                   compile
-           end,
-
-    State1 = rebar_state:set(State, task, Task),
-    State2 = rebar_state:command_args(State1, []),
-
-    listen_on_project_apps(State2),
-    State3 = remove_from_plugin_paths(State2),
-
-    case rebar_core:process_command(State3, Task) of
-        {ok, State4} ->
-            auto(Task, State4);
-        Error ->
-            Error
-    end.
-
-auto(Provider, State) ->
     flush(),
     receive
         _Msg ->
             ok
     end,
-    {ok, State1} = rebar_core:do([Provider], State),
-    auto(Provider, State1).
+    rebar_agent:do(compile),
+    auto(State).
 
 flush() ->
     receive
