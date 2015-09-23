@@ -20,6 +20,8 @@
         ,do/1
         ,format_error/1]).
 
+-export([auto/0, flush/0]).
+
 -define(PROVIDER, auto).
 -define(DEPS, [app_discovery]).
 
@@ -42,10 +44,10 @@ init(State) ->
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
-    spawn_link(fun() ->
-                       listen_on_project_apps(State),
-                       auto(State)
-               end),
+    spawn(fun() ->
+                  listen_on_project_apps(State),
+                  ?MODULE:auto()
+          end),
     State1 = remove_from_plugin_paths(State),
     rebar_prv_shell:do(State1).
 
@@ -53,14 +55,19 @@ do(State) ->
 format_error(Reason) ->
     io_lib:format("~p", [Reason]).
 
-auto(State) ->
-    flush(),
-    receive
-        _Msg ->
-            ok
-    end,
-    rebar_agent:do(compile),
-    auto(State).
+auto() ->
+    case whereis(rebar_agent) of
+        undefined ->
+            ?MODULE:auto();
+        _ ->
+            flush(),
+            receive
+                _Msg ->
+                    ok
+            end,
+            rebar_agent:do(compile),
+            ?MODULE:auto()
+    end.
 
 flush() ->
     receive
