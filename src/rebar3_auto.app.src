@@ -1,13 +1,13 @@
 {application, rebar3_auto,
  [{description, "Rebar3 plugin for auto compiling on changes"}
- ,{vsn, "0.1.0"}
+ ,{vsn, "0.2.0"}
  ,{registered, []}
  ,{applications,
     [kernel,stdlib,enotify]}
  ,{env,[]}
  ,{modules, []}
 
- ,{contributors,["Tristan Sloughter"]}
+ ,{maintainers,["Tristan Sloughter"]}
  ,{licenses,["MIT"]}
  ,{links,[{"Github","https://github.com/tsloughter/rebar3_auto"}]}
  ]}.
