@@ -23,7 +23,7 @@
 -export([auto/0, flush/0]).
 
 -define(PROVIDER, auto).
--define(DEPS, [app_discovery]).
+-define(DEPS, [compile]).
 
 %% ===================================================================
 %% Public API
