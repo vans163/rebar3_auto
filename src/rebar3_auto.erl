@@ -36,7 +36,26 @@ init(State) ->
             {bare, true},             % The task can be run by the user, always true
             {deps, ?DEPS},            % The list of dependencies
             {example, "rebar3 auto"}, % How to use the plugin
-            {opts, []},               % list of options understood by the plugin
+            {opts, [{config, undefined, "config", string,
+                     "Path to the config file to use. Defaults to "
+                     "{shell, [{config, File}]} and then the relx "
+                     "sys.config file if not specified."},
+                    {name, undefined, "name", atom,
+                     "Gives a long name to the node."},
+                    {sname, undefined, "sname", atom,
+                     "Gives a short name to the node."},
+                    {setcookie, undefined, "setcookie", atom,
+                     "Sets the cookie if the node is distributed."},
+                    {script_file, undefined, "script", string,
+                     "Path to an escript file to run before "
+                     "starting the project apps. Defaults to "
+                     "rebar.config {shell, [{script_file, File}]} "
+                     "if not specified."},
+                    {apps, undefined, "apps", string,
+                     "A list of apps to boot before starting the "
+                     "shell. (E.g. --apps app1,app2,app3) Defaults "
+                     "to rebar.config {shell, [{apps, Apps}]} or "
+                     "relx apps if not specified."}]},
             {short_desc, "Automatically run compile task on change of source file and reload modules."},
             {desc, ""}
     ]),
