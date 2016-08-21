@@ -17,8 +17,9 @@ Add the plugin to your rebar config, since it is a developer tool and not necess
 
 
 Then run
+```
     $ rebar3 compile
-
+```
 
 Then just call your plugin directly in an existing application:
 
