@@ -3,17 +3,23 @@ rebar_auto_plugin
 
 A rebar3 plugin for auto running compile on source file change reloading modules in the shell.
 
-Build
+Prerequisite
 -----
+On Linux you need to install inotify-tools.
 
-    $ rebar3 compile
 
 Use
 ---
 
-Add the plugin to your rebar config, since it is a developer tool and not necessary for building any project you work on I put it in `~/config/.rebar3/rebar.config`:
+Add the plugin to your rebar config, since it is a developer tool and not necessary for building any project you work on I put it in `~/.config/rebar3/rebar.config`:
 
     {plugins, [rebar3_auto]}.
+
+
+Then run
+```
+    $ rebar3 compile
+```
 
 Then just call your plugin directly in an existing application:
 
