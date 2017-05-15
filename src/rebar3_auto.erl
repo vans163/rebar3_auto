@@ -121,8 +121,14 @@ listen_on_project_apps(State) ->
         fun(AppInfo) ->
             SrcDir = filename:join(rebar_app_info:dir(AppInfo), "src"),
             CSrcDir = filename:join(rebar_app_info:dir(AppInfo), "c_src"),
-            enotify:start_link(SrcDir),
-            enotify:start_link(CSrcDir)
+            case filelib:is_dir(SrcDir) of
+                true -> enotify:start_link(SrcDir);
+                false -> ignore
+            end,
+            case filelib:is_dir(CSrcDir) of
+                true -> enotify:start_link(CSrcDir);
+                false -> ignore
+            end
         end, 
         ProjectApps ++ CheckoutDeps
     ).
