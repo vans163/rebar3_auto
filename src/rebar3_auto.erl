@@ -85,7 +85,7 @@ auto() ->
 
         _ ->
             receive 
-                {ChangedFile, Events} ->
+                {ChangedFile, _Events} ->
                     Ext = filename:extension(unicode:characters_to_binary(ChangedFile)),
                     IsValid = lists:member(Ext, ?VALID_EXTENSIONS),
                     case IsValid of
