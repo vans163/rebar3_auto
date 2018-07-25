@@ -75,7 +75,7 @@ do(State) ->
     State1 = remove_from_plugin_paths(State),
     rebar_prv_shell:do(State1).
 
--define(VALID_EXTENSIONS,[<<".erl">>, <<".hrl">>, <<".src">>, <<".config">>, <<".lock">>,
+-define(VALID_EXTENSIONS,[<<".erl">>, <<".hrl">>, <<".src">>, <<".lfe">>, <<".config">>, <<".lock">>,
     <<".c">>, <<".cpp">>, <<".h">>, <<".hpp">>, <<".cc">>]).
 
 auto() ->
