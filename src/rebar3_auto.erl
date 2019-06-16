@@ -20,7 +20,7 @@
         ,do/1
         ,format_error/1]).
 
--export([auto/0, flush/0]).
+-export([auto/1, flush/0]).
 
 -define(PROVIDER, auto).
 -define(DEPS, [compile]).
@@ -65,12 +65,12 @@ init(State) ->
 format_error(Reason) ->
     io_lib:format("~p", [Reason]).
 
-
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
     spawn(fun() ->
             listen_on_project_apps(State),
-            ?MODULE:auto()
+            Exts = get_extensions(State),
+            ?MODULE:auto(Exts)
         end),
     State1 = remove_from_plugin_paths(State),
     rebar_prv_shell:do(State1).
@@ -78,7 +78,12 @@ do(State) ->
 -define(VALID_EXTENSIONS,[<<".erl">>, <<".hrl">>, <<".src">>, <<".lfe">>, <<".config">>, <<".lock">>,
     <<".c">>, <<".cpp">>, <<".h">>, <<".hpp">>, <<".cc">>]).
 
-auto() ->
+get_extensions(State) ->
+    Opts = rebar_state:get(State, auto, []),
+    ExtaExts = proplists:get_value(extensions, Opts, []),
+    [unicode:characters_to_binary(Ext) || Ext <- ExtaExts] ++ ?VALID_EXTENSIONS.
+
+auto(Extensions) ->
     case whereis(rebar_agent) of
         undefined ->
             timer:sleep(100);
@@ -87,7 +92,7 @@ auto() ->
             receive 
                 {ChangedFile, _Events} ->
                     Ext = filename:extension(unicode:characters_to_binary(ChangedFile)),
-                    IsValid = lists:member(Ext, ?VALID_EXTENSIONS),
+                    IsValid = lists:member(Ext, Extensions),
                     case IsValid of
                         false -> pass;
                         true ->
@@ -101,7 +106,7 @@ auto() ->
             end
 
     end,
-    ?MODULE:auto().
+    ?MODULE:auto(Extensions).
 
 flush() ->
     receive
