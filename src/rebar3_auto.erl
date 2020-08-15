@@ -20,7 +20,7 @@
         ,do/1
         ,format_error/1]).
 
--export([auto/0, flush/0]).
+-export([auto/1, flush/0]).
 
 -define(PROVIDER, auto).
 -define(DEPS, [compile]).
@@ -70,15 +70,20 @@ format_error(Reason) ->
 do(State) ->
     spawn(fun() ->
             listen_on_project_apps(State),
-            ?MODULE:auto()
+            Extensions = get_extensions(State),
+            ?MODULE:auto(Extensions)
         end),
     State1 = remove_from_plugin_paths(State),
     rebar_prv_shell:do(State1).
 
--define(VALID_EXTENSIONS,[<<".erl">>, <<".hrl">>, <<".src">>, <<".lfe">>, <<".config">>, <<".lock">>,
+-define(VALID_EXTENSIONS_DEFAULT,[<<".erl">>, <<".hrl">>, <<".src">>, <<".lfe">>, <<".config">>, <<".lock">>,
     <<".c">>, <<".cpp">>, <<".h">>, <<".hpp">>, <<".cc">>]).
 
-auto() ->
+get_extensions(State) ->
+    ExtraExtensions = rebar_state:get(State, extra_extensions, []),
+    [unicode:characters_to_binary(Ext) || Ext <- ExtraExtensions] ++ ?VALID_EXTENSIONS_DEFAULT.
+
+auto(Extensions) ->
     case whereis(rebar_agent) of
         undefined ->
             timer:sleep(100);
@@ -87,7 +92,19 @@ auto() ->
             receive 
                 {ChangedFile, _Events} ->
                     Ext = filename:extension(unicode:characters_to_binary(ChangedFile)),
-                    IsValid = lists:member(Ext, ?VALID_EXTENSIONS),
+                    IsValid = lists:any(
+                        fun(ValidExt) ->
+                            RE = <<ValidExt/binary, "$">>,
+                            Result = re:run(Ext, RE),
+                            case Result of
+                                {match, _Captured} -> true;
+                                match -> true;
+                                nomatch -> false;
+                                {error, _ErrType} -> false
+                            end
+                        end,
+                        Extensions
+                    ),
                     case IsValid of
                         false -> pass;
                         true ->
@@ -101,7 +118,7 @@ auto() ->
             end
 
     end,
-    ?MODULE:auto().
+    ?MODULE:auto(Extensions).
 
 flush() ->
     receive

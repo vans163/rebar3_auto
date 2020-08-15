@@ -1,1 +1,6 @@
-[{<<"enotify">>,{pkg,<<"enotify">>,<<"0.1.0">>},0}].
+{"1.1.0",
+[{<<"enotify">>,{pkg,<<"enotify">>,<<"0.1.0">>},0}]}.
+[
+{pkg_hash,[
+ {<<"enotify">>, <<"F6BF33AA7BC4789D953087E48C6ADBC6D9682B6D67E4BC353C2FDB96C5AC5595">>}]}
+].
