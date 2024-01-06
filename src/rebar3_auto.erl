@@ -89,8 +89,8 @@ auto(Extensions) ->
             timer:sleep(100);
 
         _ ->
-            receive 
-                {ChangedFile, _Events} ->
+            receive
+		{_Pid, _Type, {ChangedFile, _Events}} ->
                     Ext = filename:extension(unicode:characters_to_binary(ChangedFile)),
                     IsValid = lists:any(
                         fun(ValidExt) ->
@@ -139,11 +139,15 @@ listen_on_project_apps(State) ->
             SrcDir = filename:join(rebar_app_info:dir(AppInfo), "src"),
             CSrcDir = filename:join(rebar_app_info:dir(AppInfo), "c_src"),
             case filelib:is_dir(SrcDir) of
-                true -> enotify:start_link(SrcDir);
+                true -> 
+			fs:start_link(fs_watcher, SrcDir),
+			fs:subscribe(fs_watcher);
                 false -> ignore
             end,
             case filelib:is_dir(CSrcDir) of
-                true -> enotify:start_link(CSrcDir);
+                true -> 
+			fs:start_link(fs_watcher_csrc, SrcDir),
+			fs:subscribe(fs_watcher_csrc);
                 false -> ignore
             end
         end, 
@@ -156,7 +160,7 @@ remove_from_plugin_paths(State) ->
         fun(Path) ->
             Name = filename:basename(Path, "/ebin"),
             not (list_to_atom(Name) =:= rebar_auto_plugin
-                orelse list_to_atom(Name) =:= enotify)
+                orelse list_to_atom(Name) =:= fs)
         end, 
         PluginPaths
     ),
