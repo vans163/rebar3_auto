@@ -112,7 +112,7 @@ auto(Extensions) ->
                             % or we can flush after compile?
                             timer:sleep(200),
                             flush(),
-                            rebar_agent:do(compile)
+                            r3:do(compile)
                     end;
                 _ -> pass
             end
@@ -140,13 +140,13 @@ listen_on_project_apps(State) ->
             CSrcDir = filename:join(rebar_app_info:dir(AppInfo), "c_src"),
             case filelib:is_dir(SrcDir) of
                 true -> 
-			fs:start_link(fs_watcher, SrcDir),
-			fs:subscribe(fs_watcher);
+			fs:start_link(fs_watcher_src, SrcDir),
+			fs:subscribe(fs_watcher_src);
                 false -> ignore
             end,
             case filelib:is_dir(CSrcDir) of
                 true -> 
-			fs:start_link(fs_watcher_csrc, SrcDir),
+			fs:start_link(fs_watcher_csrc, CSrcDir),
 			fs:subscribe(fs_watcher_csrc);
                 false -> ignore
             end
