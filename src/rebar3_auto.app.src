@@ -1,6 +1,6 @@
 {application,rebar3_auto,
              [{description,"Rebar3 plugin for auto compiling on changes"},
-              {vsn,"0.5.1"},
+              {vsn,"0.6.0"},
               {registered,[]},
               {applications,[kernel,stdlib,fs]},
               {env,[]},

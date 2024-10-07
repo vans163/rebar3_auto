@@ -68,9 +68,10 @@ format_error(Reason) ->
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
+    Opts = rebar_state:get(State, auto, []),
     spawn(fun() ->
-            listen_on_project_apps(State),
-            Extensions = get_extensions(State),
+            listen_on_project_apps(State, Opts),
+            Extensions = get_extensions(State, Opts),
             ?MODULE:auto(Extensions)
         end),
     State1 = remove_from_plugin_paths(State),
@@ -79,8 +80,10 @@ do(State) ->
 -define(VALID_EXTENSIONS_DEFAULT,[<<".erl">>, <<".hrl">>, <<".src">>, <<".lfe">>, <<".config">>, <<".lock">>,
     <<".c">>, <<".cpp">>, <<".h">>, <<".hpp">>, <<".cc">>]).
 
-get_extensions(State) ->
-    ExtraExtensions = rebar_state:get(State, extra_extensions, []),
+get_extensions(State, Opts) ->
+    ExtraExtensions1 = rebar_state:get(State, extra_extensions, []), %%left for backward compatibility
+    ExtraExtensions2 = proplists:get_value(extra_extensions, Opts, []),
+    ExtraExtensions = ExtraExtensions1 ++ ExtraExtensions2,
     [unicode:characters_to_binary(Ext) || Ext <- ExtraExtensions] ++ ?VALID_EXTENSIONS_DEFAULT.
 
 auto(Extensions) ->
@@ -128,29 +131,31 @@ flush() ->
         0 -> ok
     end.
 
-listen_on_project_apps(State) ->
-    CheckoutDeps = [AppInfo || 
-        AppInfo <-rebar_state:all_deps(State), 
+listen_on_project_apps(State, Opts) ->
+    CheckoutDeps = [AppInfo ||
+        AppInfo <-rebar_state:all_deps(State),
         rebar_app_info:is_checkout(AppInfo) == true
     ],
+    ExtraDirs = [unicode:characters_to_binary(D) || D <-  proplists:get_value(extra_dirs, Opts, [])],
     ProjectApps = rebar_state:project_apps(State),
     lists:foreach(
         fun(AppInfo) ->
-            SrcDir = filename:join(rebar_app_info:dir(AppInfo), "src"),
-            CSrcDir = filename:join(rebar_app_info:dir(AppInfo), "c_src"),
-            case filelib:is_dir(SrcDir) of
-                true -> 
-			fs:start_link(fs_watcher_src, SrcDir),
-			fs:subscribe(fs_watcher_src);
-                false -> ignore
-            end,
-            case filelib:is_dir(CSrcDir) of
-                true -> 
-			fs:start_link(fs_watcher_csrc, CSrcDir),
-			fs:subscribe(fs_watcher_csrc);
-                false -> ignore
-            end
-        end, 
+            AppDir = rebar_app_info:dir(AppInfo),
+            Dirs = ExtraDirs ++ [<<"src">>, <<"c_src">>],
+            lists:foreach(
+                fun(Dir) ->
+                    Path = filename:join(AppDir, Dir),
+                    case filelib:is_dir(Path) of
+                        true ->
+                            Handle = binary_to_atom(<<"fs_watcher_", Path/binary>>),
+                            fs:start_link(Handle, Path),
+                            fs:subscribe(Handle);
+                        false -> ignore
+                    end
+                end,
+                Dirs
+            )
+        end,
         ProjectApps ++ CheckoutDeps
     ).
 
