@@ -55,9 +55,18 @@ Regex matches are supported, "$" is suffixed automatically, thanks xuchaoqian.
 re:run(<<"file_name.erl_ab">>, <<ExtMatch/binary, "$">>)
 ```
 
-```
+
 To extend the list add an option to your rebar.config like so:
+```
+{auto, [
+	{extra_extensions, [".alp", ".hterl", ".erl(.*?)"]}
+]}.
+```
 
-{extra_extensions, [".alp", ".hterl", ".erl(.*?)"]}.
-
+Extra directories.
+To extend the list of directories to be watched add an option to your rebar.config like so:
+```
+{auto, [
+	{extra_dirs, ["priv/dtl"]}
+]}.
 ```
