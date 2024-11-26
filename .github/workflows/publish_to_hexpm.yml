@@ -15,6 +15,7 @@ jobs:
       run: |
         mkdir -p ~/.config/rebar3
         echo "{plugins, [rebar3_hex]}." > ~/.config/rebar3/rebar.config
+        echo "${{ secrets.HEX_CONFIG }}" > ~/.config/rebar3/hex.config
     
     - name: Set up Erlang
       uses: erlef/setup-beam@v1
@@ -24,8 +25,6 @@ jobs:
         rebar3-version: '3.22.1'
 
     - name: Publish to Hex.pm
-      env:
-        HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
       run: |
         mix local.rebar --force
         mix local.hex --force
