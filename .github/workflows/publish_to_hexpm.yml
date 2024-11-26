@@ -1,0 +1,26 @@
+name: Publish to Hex.pm
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Erlang
+      uses: erlef/setup-beam@v1
+      with:
+        otp-version: '25.3'
+        rebar3-version: '3.22.1'
+    
+    - name: Publish to Hex.pm
+      env:
+        HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+      run: |
+        mix local.rebar --force
+        mix local.hex --force
+        mix hex.publish --yes
