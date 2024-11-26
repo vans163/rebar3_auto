@@ -10,6 +10,11 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
+
+    - name: Prepare Hex.pm Configuration
+      run: |
+        mkdir -p ~/.config/rebar3
+        echo "{plugins, [rebar3_hex]}." > ~/.config/rebar3/rebar.config
     
     - name: Set up Erlang
       uses: erlef/setup-beam@v1
@@ -17,11 +22,12 @@ jobs:
         otp-version: '25.3'
         elixir-version: '1.15.4'
         rebar3-version: '3.22.1'
-    
+
     - name: Publish to Hex.pm
       env:
         HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
       run: |
         mix local.rebar --force
         mix local.hex --force
+        rebar3 update
         rebar3 hex publish --yes
