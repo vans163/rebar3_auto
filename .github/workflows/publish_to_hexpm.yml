@@ -15,7 +15,7 @@ jobs:
       run: |
         mkdir -p ~/.config/rebar3
         echo "{plugins, [rebar3_hex]}." > ~/.config/rebar3/rebar.config
-        echo "${{ secrets.HEX_CONFIG }}" > ~/.config/rebar3/hex.config
+        echo '${{ secrets.HEX_CONFIG }}' > ~/.config/rebar3/hex.config
     
     - name: Set up Erlang
       uses: erlef/setup-beam@v1
